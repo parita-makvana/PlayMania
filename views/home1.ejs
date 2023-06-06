@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PlayStore Web App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    
+    header {
+      background-color: #4285F4;
+      color: white;
+      padding: 20px;
+    }
+    
+    h1 {
+      margin: 0;
+      font-size: 32px;
+    }
+    
+    main {
+      padding: 20px;
+    }
+    
+    .app-card {
+      display: flex;
+      border: 1px solid #E0E0E0;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      padding: 10px;
+    }
+    
+    .app-card img {
+      width: 100px;
+      height: 100px;
+      margin-right: 10px;
+    }
+    
+    .app-card-info {
+      flex: 1;
+    }
+    
+    .app-card-info h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+    
+    .app-card-info p {
+      margin: 0;
+      font-size: 14px;
+      color: #707070;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PlayStore Web App</h1>
+  </header>
+  
+  <main>
+    <% appData.forEach(function(app) { %>
+    <div class="app-card">
+      <img src="<%= app.image %>" alt="<%= app.title %>">
+      <div class="app-card-info">
+        <h2><%= app.title %></h2>
+        <p><%= app.description %></p>
+      </div>
+    </div>
+    <% }); %>
+  </main>
+</body>
+</html>
