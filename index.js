@@ -1,5 +1,6 @@
 // Importing modules 
 const express = require('express')
+const bcrypt = require('bcrypt')
 const client = require('/Users/diptisharma/Desktop/PlayMania/config/db.js');
 
 
@@ -7,6 +8,7 @@ const app = express();
 app.use(express.json()); 
 
 const bodyParser = require("body-parser");
+
 app.use(bodyParser.json());
 
 client.connect();
@@ -15,17 +17,17 @@ client.connect();
 // Routes FOR SIGN-IN  AND SIGN-UP pages 
 
 // For getting the Home page of the application 
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
   res.render('home.ejs')
 })
 
 // For getting the Sign-in page 
-app.get('/login', function (req, res) {
+app.get('/login', (req, res) => {
   res.render('login.ejs')
 })
 
 // For getting the Sign-up page 
-app.get('/register', function (req, res) {
+app.get('/register', (req, res) => {
   res.render('register.ejs')
 })
 
@@ -47,13 +49,72 @@ app.get("/users", (req, res) => {
   });
   
 
+  // app.post('/login', async (req, res) => {
+  //   const { email, password } = req.body;
+  //   try {
+  //     console.log("Email: ",email);
+  //     // console.log(`SELECT * FROM public.user WHERE email = $1`, [email]);
+  //     const result = await client.query(`SELECT * FROM public.user WHERE email = ${email}`);
+  //     // will get the first element from the email array 
 
-//API FOR USER REGISTRATION
+
+
+
+
+
+// Sign-In 
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const result = await client.query(`SELECT * FROM public.user WHERE email = '${email}' `);
+    // will get the first element from the email array 
+    
+    if (!result || !result.rows || result.rows.length === 0) {
+      return res.status(401).json(
+        { message: 'Email not found, Please register to the app' }
+        );
+    }
+    // here we will add the field specific error  -- like if the password did not match then it will give that specific error 
+    
+    // comparing the password entered with the password stored 
+    const users = result.rows[0]
+
+    // console.log("passwords: ", password, users.hashed_password)
+    const validPassword = await bcrypt.compare(password, users.hashed_password);
+    // database should have the encrypted password -- solve this 
+
+    if (!validPassword) {
+      return res.status(401).json(
+        { message: 'Invalid Password' }
+        );
+    }
+    res.status(200).json(
+      { message: 'Login successful' }
+      );
+
+    // redirecting the user to the home page ----***------ frontend 
+
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(500).json(
+      { message: 'Internal server error' }
+      );
+  }
+});
+
+
+
 //------ SIGN UP -----------
-app.post("/createUser", (req, res) => {
+app.post("/createUser", async (req, res) => {
   const user = req.body;
+  // let hashed_password = "";
+  const hashed_password = bcrypt.hashSync(user.password, 10);
+
+  // does not return the hashed password
+  // change the name of user.hashed_password to password in postman -- so change it in line 112 as well 
   let insertQuery = `insert into public.user(user_id, username, role, dob, email, hashed_password, subscription_ends)
-  values(${user.user_id}, '${user.username}', '${user.role}', '${user.dob}','${user.email}', '${user.hashed_password}','${user.subscription_ends}')`;
+  values(${user.user_id}, '${user.username}', '${user.role}', '${user.dob}','${user.email}', '${hashed_password}','${user.subscription_ends}')`;
 
   client.query(insertQuery, (err, result) => {
       if (!err) {
@@ -66,6 +127,9 @@ app.post("/createUser", (req, res) => {
       });
       
 // AutoIncreament will be added on
+// validators need to be added -- for empty fields 
+
+
 
 // to start the server 
 const port = 8000;
