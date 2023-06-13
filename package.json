@@ -1,7 +1,7 @@
 {
   "name": "playmania",
   "version": "1.0.0",
-  "description": "The app where user and buy games and seller can sell the games",
+  "description": "The app where user can buy games and seller can sell the games",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -12,12 +12,17 @@
   "dependencies": {
     "bcrypt": "^5.1.0",
     "client": "^0.0.1",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.1.4",
     "ejs": "^3.1.9",
     "eslint": "^8.41.0",
     "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
     "pg": "^8.11.0",
     "pool": "^0.4.1",
-    "prettier": "^2.8.8"
+    "prettier": "^2.8.8",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

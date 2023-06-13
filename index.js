@@ -1,17 +1,44 @@
 // Importing modules 
-const express = require('express')
-const bcrypt = require('bcrypt')
+const express = require('express');
+const bcrypt = require('bcrypt');
+const bodyParser = require('body-parser');
 const client = require('/Users/diptisharma/Desktop/PlayMania/config/db.js');
+const dotenv = require('dotenv');
 
+
+// to get the jwtwebtoken 
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const jwtTokens = require('/Users/diptisharma/Desktop/PlayMania/utils/jwt-helpers.js');
+const cookieParser = require('cookie-parser');
+const corsOptions = {credentials:true, origin: '*'};
+const authenticateToken = require('/Users/diptisharma/Desktop/PlayMania/middleware/authorization.js');
+
+
+
+// changed from here -- to get the access of environment variables 
+dotenv.config();
 
 const app = express();
 app.use(express.json()); 
-
-const bodyParser = require('body-parser');
-
 app.use(bodyParser.json());
 
+// changes from here for JWT 
+app.use(cors(corsOptions));
+app.use(cookieParser());
+
+// db connection
 client.connect();
+
+
+// for genrating uuid
+const uuid = require('uuid');
+const { v4: uuidv4 } = require('uuid');
+
+
+
+// router 
+const router = express.Router();
 
 
 // Routes FOR SIGN-IN  AND SIGN-UP pages 
@@ -32,52 +59,64 @@ app.get('/register', (req, res) => {
 
 
 
-//API FOR ADMIN
+// for admin to view all the database 
 //To view all users
-app.get('/users', (req, res) => {
-  client.query(`Select * from public.user `, (err, result) => {
-  console.log(result);
-  
-  if (!err) {
-  res.send(result.rows);
-  } else {
-  res.send(err);
+
+// router.get('/users', authenticateToken, (req, res,next) =>{
+
+app.get('/users', authenticateToken, (req, res) => {
+  try {
+    client.query(`Select * from public.user `, (err, result) => {
+      console.log(result);
+    
+      if (!err) {
+      res.send(result.rows);
+      } else {
+      res.status(401).json({message: err.message})
+      }
+      });
+      client.end;
+    
+  } catch (error) {
+    res.status(401).json({message: error.message})
   }
-  });
-  client.end;
-  });
+});
+ 
+
   
 
 
 // Sign-In 
 app.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-
   try {
+    const { email, password } = req.body;
     const result = await client.query(`SELECT * FROM public.user WHERE email = '${email}' `);
-    // will get the first element from the email array 
-    
-    if (!result || !result.rows || result.rows.length === 0) {
-      return res.status(401).json(
-        { message: 'Email not found, Please register to the app with valid email..' }
-        );
-    }
-    // here we will add the field specific error  -- like if the password did not match then it will give that specific error 
+
     // comparing the password entered with the password stored 
     const users = result.rows[0]
 
     // console.log("passwords: ", password, users.hashed_password)
-    const validPassword = await bcrypt.compare(password, users.hashed_password);
+    const validPassword = users? await bcrypt.compare(password, users.hashed_password):null;
+    
     // database should have the encrypted password -- solve this 
-
-    if (!validPassword) {
+    if ((!result || !result.rows || result.rows.length === 0) || (!validPassword) ){
       return res.status(401).json(
-        { message: 'Invalid Password' }
+        { message: 'Either email or password is wrong.. try again..' }
         );
     }
-    res.status(200).json(
-      { message: 'Login successful' }
-      );
+
+
+    // JWT 
+    let tokens = jwtTokens(result.rows[0]);
+    res.cookie('access_token', tokens.accessToken, {httpOnly:true});
+    res.cookie('refresh_token', tokens.refreshToken, {httpOnly:true});
+
+    // add this line afterwards to get the tokens as response 
+    // -- gives error when we try to send multiple responses 
+
+    // res.json(tokens);                                          // use this to get the access and refresh token
+    res.status(200).json({ message: 'Login successful' });
+    
 
     // redirecting the user to the home page ----***------ frontend 
 
@@ -90,21 +129,69 @@ app.post('/login', async (req, res) => {
 });
 
 
-//------ SIGN UP -----------
-app.post('/createUser', async (req, res) => {
+// // for refresh token -- FRONT END -- to get the tokens
+app.get('/refresh_token', (req, res) =>{
+  try {
+    const refreshToken = req.cookies.refresh_token;
+    // console.log(refreshToken);                         // getting the refresh token 
+
+    if(refreshToken === null) {
+      return res.status(401).json({error:'Null refresh token'})
+    };
+
+    // to verify that the refresh token generated through our refresh token 
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, user) =>{
+      if (error) return res.status(403).json({error:error.message});
+
+      let tokens = jwtTokens(user);
+      res.cookie('refresh_token', tokens.refreshToken, {httpOnly:true});
+      // to get the tokens through api
+      res.json(tokens);
+    })
+
+  } catch (error) {
+    res.status(401).json(
+      {error: error.message}
+      );
+  }
+});
+
+
+// to logout the user -- we basically will cleear cookie --- 
+
+// removing from cookie
+app.delete('/refresh_token', (req, res) => {
+  try {
+    const options ={
+      expires:new Date(
+          Date.now()
+      ),
+      httpOnly:true
+  }
+    //res.clearCookie('refresh_token');
+    //res.clearCookie('access_token');
+    return res.status(200).cookie("access_token", options).json({message: 'Logged out successfuly.'})
+  } catch (error) {
+    res.status(401).json(
+      {error: error.message}
+      );
+  }
+})
+// deleting  the jwt when user logs out 
+
+
+
+// Registering new user 
+app.post('/register', async (req, res) => {
+  try {
   const user = req.body;
-  // let hashed_password = "";
-  const hashed_password = bcrypt.hashSync(user.password, 10);
-
-// changing from here 
-  const username1 = req.body.username;
-  const email1 = req.body.email;
-  const user_dob = req.body.dob;
-
-
-// adding validations
-  if (!username1){
-    res.send({
+  // WHEN  TRYING TO ACCESS THE SALT ROUNDS FROM ENV-- GETTING ERROR -- CONVERT TO NUMBER -- DONE 
+  const hashed_password = bcrypt.hashSync(user.password, Number(process.env.SALT_ROUNDS));
+// 
+  const {username, email, dob} = req.body;
+// adding validations  -- change to valid  status  codes
+  if (!username){
+    return res.send({
       success: false,
       message: 'important fields empty',
       errors: [
@@ -114,8 +201,8 @@ app.post('/createUser', async (req, res) => {
         }
       ]
     })
-  } else if (!email1){
-    res.send({
+  } else if (!email){
+    return res.send({
       success: false,
       message: 'important field empty',
       errors: [
@@ -125,8 +212,8 @@ app.post('/createUser', async (req, res) => {
         }
       ]
     })
-  } else if (!user_dob){
-    res.send({
+  } else if (!dob){
+    return res.send({
       success: false,
       message: 'important field empty',
       errors: [
@@ -137,31 +224,40 @@ app.post('/createUser', async (req, res) => {
       ]
     })
   }
+// express validators -- instead of the above validators 
+// to prevent creation of the entry -- return 
+
+// for repeated entries -- validators 
 
 
-  
-  // does not return the hashed password
-  // change the name of user.hashed_password to password in postman -- so change it in line 112 as well 
+// change the name of user.hashed_password to password in postman -- so change it in line 112 as well 
   let insertQuery = `insert into public.user(user_id, username, role, dob, email, hashed_password, subscription_ends)
-  values(${user.user_id}, '${user.username}', '${user.role}', '${user.dob}','${user.email}', '${hashed_password}','${user.subscription_ends}')`;
+  values((SELECT MAX(user_id) from public.user)+1, '${user.username}', '${user.role}', '${user.dob}','${user.email}', '${hashed_password}','${user.subscription_ends}')`;
 
   client.query(insertQuery, (err, result) => {
       if (!err) {
+      // JWT 
+      let tokens = jwtTokens(user);
+      res.cookie('access_token', tokens.accessToken, {httpOnly:true});
+      res.cookie('refresh_token', tokens.refreshToken, {httpOnly:true});
       res.send('Insertion was successful');
       } else {
       console.log(err.message);
       }
       });
       client.end;
+
+    } catch (error) {
+      console.error('Error while registering, register again....', error);
+      res.status(500).json(
+        { message: 'Internal server error'}
+        );
+    }
       });
       
-// AutoIncreament will be added on
-// validators need to be added -- for empty fields 
-
-
 
 // to start the server 
-const port = 8000;
-app.listen(port, () => {
-    console.log(`App running on port ${port}...`);
+app.listen(process.env.PORT, () => {
+    console.log(`App running on port ${process.env.PORT}...`);
 });
+
