@@ -5,23 +5,30 @@ const bodyParser = require('body-parser');
 const client = require('/Users/diptisharma/Desktop/PlayMania/config/db.js');
 const dotenv = require('dotenv');
 
-
 // to get the jwtwebtoken 
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const jwtTokens = require('/Users/diptisharma/Desktop/PlayMania/utils/jwt-helpers.js');
 const cookieParser = require('cookie-parser');
 const corsOptions = {credentials:true, origin: '*'};
-const authenticateToken = require('/Users/diptisharma/Desktop/PlayMania/middleware/authorization.js');
 
+
+const authenticateToken = require('/Users/diptisharma/Desktop/PlayMania/middleware/authorization.js');
+// for signup
+const isUserAuth = require('/Users/diptisharma/Desktop/PlayMania/middleware/isUserAuth.js');
+// for role specific 
+const userRole = require('/Users/diptisharma/Desktop/PlayMania/middleware/userRoles.js')
 
 
 // changed from here -- to get the access of environment variables 
 dotenv.config();
 
+
+
 const app = express();
 app.use(express.json()); 
 app.use(bodyParser.json());
+
 
 // changes from here for JWT 
 app.use(cors(corsOptions));
@@ -31,14 +38,16 @@ app.use(cookieParser());
 client.connect();
 
 
+
+
 // for genrating uuid
 const uuid = require('uuid');
 const { v4: uuidv4 } = require('uuid');
 
 
-
 // router 
 const router = express.Router();
+
 
 
 // Routes FOR SIGN-IN  AND SIGN-UP pages 
@@ -64,7 +73,10 @@ app.get('/register', (req, res) => {
 
 // router.get('/users', authenticateToken, (req, res,next) =>{
 
-app.get('/users', authenticateToken, (req, res) => {
+
+// limit bydefault 5 -- offset pass through body 
+
+app.get('/users',isUserAuth, (req, res) => {
   try {
     client.query(`Select * from public.user `, (err, result) => {
       console.log(result);
@@ -84,9 +96,8 @@ app.get('/users', authenticateToken, (req, res) => {
  
 
   
-
-
 // Sign-In 
+
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -104,7 +115,6 @@ app.post('/login', async (req, res) => {
         { message: 'Either email or password is wrong.. try again..' }
         );
     }
-
 
     // JWT 
     let tokens = jwtTokens(result.rows[0]);
@@ -158,19 +168,13 @@ app.get('/refresh_token', (req, res) =>{
 
 
 // to logout the user -- we basically will cleear cookie --- 
-
 // removing from cookie
 app.delete('/refresh_token', (req, res) => {
   try {
-    const options ={
-      expires:new Date(
-          Date.now()
-      ),
-      httpOnly:true
-  }
-    //res.clearCookie('refresh_token');
-    //res.clearCookie('access_token');
-    return res.status(200).cookie("access_token", options).json({message: 'Logged out successfuly.'})
+    
+    res.clearCookie('refresh_token');
+    res.clearCookie('access_token');   // chnaged here 
+    return res.status(200).json({message: 'Logged out successfuly.'})
   } catch (error) {
     res.status(401).json(
       {error: error.message}
@@ -226,7 +230,6 @@ app.post('/register', async (req, res) => {
   }
 // express validators -- instead of the above validators 
 // to prevent creation of the entry -- return 
-
 // for repeated entries -- validators 
 
 

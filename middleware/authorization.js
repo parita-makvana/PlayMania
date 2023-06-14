@@ -15,7 +15,7 @@ const authenticateToken = (req, res, next) => {
     }
     // Verify that the token was generated using the secret key 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, user) =>{
-        if(error) return res.status(401).json({error: error.message});      // automaticaaly getting the error message-- after the token gets expired 
+        if(error) return res.status(401).json({message: "Invalid token"});      // automaticaaly getting the error message-- after the token gets expired 
         req.user = user;                                                    // getting payload from token 
         next();                                                             //promise
     })                                                                      
