@@ -20,7 +20,7 @@ const isUserAuth = require('/Users/diptisharma/Desktop/PlayMania/middleware/isUs
 const userRole = require('/Users/diptisharma/Desktop/PlayMania/middleware/userRoles.js')
 
 
-// changed from here -- to get the access of environment variables 
+//to get the access of environment variables 
 dotenv.config();
 
 const app = express();
@@ -34,13 +34,6 @@ app.use(cookieParser());
 
 // db connection
 client.connect();
-
-
-
-
-// for genrating uuid
-const { v4: uuidv4 } = require('uuid');
-
 
 
 
@@ -67,11 +60,8 @@ app.get('/register', (req, res) => {
 
 
 
-// for admin to view all the database 
-//To view all users
-
+// -----------------FOR ADMIN TO GET ALL THE USERS---------------
 // router.get('/users', authenticateToken, (req, res,next) =>{
-// limit bydefault 5 -- offset pass through body 
 
 app.get('/users',isUserAuth, (req, res) => {
   try {
@@ -92,7 +82,7 @@ app.get('/users',isUserAuth, (req, res) => {
 
 
 
-// Sign-In 
+// ----------------FOR LOGIN----------------------
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -101,10 +91,9 @@ app.post('/login', async (req, res) => {
     // comparing the password entered with the password stored 
     const users = result.rows[0]
 
-    // console.log("passwords: ", password, users.hashed_password)
     const validPassword = users? await bcrypt.compare(password, users.hashed_password):null;
     
-    // database should have the encrypted password -- solve this 
+    // database should have the encrypted password
     if ((!result || !result.rows || result.rows.length === 0) || (!validPassword) ){
       return res.status(401).json(
         { message: 'Either email or password is wrong.. try again..' }
@@ -115,12 +104,10 @@ app.post('/login', async (req, res) => {
   
       // add this line afterwards to get the tokens as response 
       // -- gives error when we try to send multiple responses 
-  
       // res.json(tokens);                                          // use this to get the access and refresh token
+
       res.status(200).json({ message: 'Login successful' });
       }
-
-    // redirecting the user to the home page ----***------ frontend 
 
   } catch (error) {
     console.error('Error during login: Please try again', error);
@@ -130,7 +117,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// // for refresh token -- FRONT END -- to get the tokens
+// -----------TO GET THE REFRESH TOKEN---------------
 app.get('/refresh_token', (req, res) =>{
   try {
     const refreshToken = req.cookies.refresh_token;
@@ -157,11 +144,12 @@ app.get('/refresh_token', (req, res) =>{
 });
 
 
+//------------FOR LOGOUT----------------------------
 // to logout the user -- we basically will cleear cookie --- 
-// removing from cookie
+// deleting  the jwt when user logs out 
+
 app.delete('/refresh_token', (req, res) => {
   try {
-    
     res.clearCookie('refresh_token');
     res.clearCookie('access_token');   // changed here 
     return res.status(200).json({message: 'Logged out successfuly.'})
@@ -171,25 +159,24 @@ app.delete('/refresh_token', (req, res) => {
       );
   }
 })
-// deleting  the jwt when user logs out 
 
 
 
 
-// Registering new user 
+
+//--------- FOR REGISTERING NEW USER---------------------- 
 app.post('/register', async (req, res) => {
   try {
   const user = req.body;
-  // WHEN  TRYING TO ACCESS THE SALT ROUNDS FROM ENV-- GETTING ERROR -- CONVERT TO NUMBER -- DONE 
   const hashed_password = bcrypt.hashSync(user.password, Number(process.env.SALT_ROUNDS));
-// 
+  // defactoring
   const {username, email, dob} = req.body;
 
-// to prevent repeated entry: 
+  // to prevent repeated entry: 
   const duplicateUsername = `SELECT user_id FROM public.user WHERE username = ${username}`;
   const duplicateEmail = `SELECT user_id FROM public.user WHERE email = ${email}`;
 
-// adding validations  -- change to valid  status  codes
+  //-----VALIDATION FOR EMPTY ENTRIES-----------
   if (!username){
     return res.send({
       success: false,
@@ -224,30 +211,7 @@ app.post('/register', async (req, res) => {
       ]
     })
 
-  // to prevent repeated entry validators---
-  //  } else if (duplicateUsername){
-  //   return res.send({
-  //     success: false,
-  //     message: 'Username already exists',
-  //     errors: [
-  //       {
-  //         field: 'username',
-  //         message: 'Username already exists..'
-  //       }
-  //     ]
-  //   })
-  // } else if (duplicateEmail){
-  //   return res.send({
-  //     success: false,
-  //     message: 'Email already exists',
-  //     errors: [
-  //       {
-  //         field: 'email',
-  //         message: 'Email already exists..'
-  //       }
-  //     ]
-  //   })
-
+  //--- VALIDATIONS FOR REPEATED ENTRIES--------
 
 
 
@@ -271,8 +235,6 @@ app.post('/register', async (req, res) => {
       });
       client.end;
     }
-
-
     } catch (error) {
       console.error('Error while registering, register again....', error);
       res.status(500).json(
@@ -281,11 +243,6 @@ app.post('/register', async (req, res) => {
     }
       });
     
-
-
-
-
-
 
 
 // to start the server 
