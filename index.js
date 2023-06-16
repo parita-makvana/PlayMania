@@ -47,12 +47,10 @@ const router = express.Router();
 app.get('/', (req, res) => {
   res.render('home.ejs')
 })
-
 // For getting the Sign-in page 
 app.get('/login', (req, res) => {
   res.render('login.ejs')
 })
-
 // For getting the Sign-up page 
 app.get('/register', (req, res) => {
   res.render('register.ejs')
@@ -60,9 +58,7 @@ app.get('/register', (req, res) => {
 
 
 
-// -----------------FOR ADMIN TO GET ALL THE USERS---------------
-// router.get('/users', authenticateToken, (req, res,next) =>{
-
+// -----------------FOR ADMIN: TO GET ALL THE USERS---------------
 app.get('/users',isUserAuth, (req, res) => {
   try {
     client.query(`Select * from public.user `, (err, result) => {
@@ -90,7 +86,6 @@ app.post('/login', async (req, res) => {
 
     // comparing the password entered with the password stored 
     const users = result.rows[0]
-
     const validPassword = users? await bcrypt.compare(password, users.hashed_password):null;
     
     // database should have the encrypted password
@@ -105,10 +100,8 @@ app.post('/login', async (req, res) => {
       // add this line afterwards to get the tokens as response 
       // -- gives error when we try to send multiple responses 
       // res.json(tokens);                                          // use this to get the access and refresh token
-
       res.status(200).json({ message: 'Login successful' });
       }
-
   } catch (error) {
     console.error('Error during login: Please try again', error);
     res.status(500).json(
@@ -116,6 +109,144 @@ app.post('/login', async (req, res) => {
       );
   }
 });
+
+
+//------------FOR LOGOUT----------------------------
+// to logout the user -- we basically will cleear cookie --- 
+// deleting  the jwt when user logs out 
+
+app.delete('/refresh_token', (req, res) => {
+  try {
+    res.clearCookie('refresh_token');
+    res.clearCookie('access_token');   // changed here 
+    return res.status(200).json({message: 'Logged out successfuly.'})
+  } catch (error) {
+    res.status(401).json(
+      {error: error.message}
+      );
+  }
+})
+
+
+//--------- FOR REGISTERING NEW USER---------------------- 
+app.post('/register', async (req, res) => {
+  try {
+    const user = req.body;
+    const hashed_password = bcrypt.hashSync(user.password, Number(process.env.SALT_ROUNDS));
+    
+    // defactoring
+    const {username, email, dob} = req.body;
+
+    // to prevent repeated entry: 
+    const isUsernameAlreadyRegistered = `SELECT COUNT(*) FROM public.user WHERE username = '${username}'`;
+    const isEmailAlreadyRegistered = `SELECT COUNT(*) FROM public.user WHERE email = '${email}'`;
+    const usernameResult = await client.query(isUsernameAlreadyRegistered);
+    const emailResult = await client.query(isEmailAlreadyRegistered);
+    const duplicateUsername = usernameResult.rows[0].count;
+    const duplicateEmail = emailResult.rows[0].count;
+
+    //check
+    const passwardLenght = (user.password).length
+  
+    //-----VALIDATION FOR EMPTY ENTRIES-----------
+    if (!username){
+      return res.send({
+        success: false,
+        message: 'important fields empty',
+        errors: [
+          {
+            field: 'username',
+            message: 'This field cannot be empty'
+          }
+        ]
+      })
+    } else if (!email){
+      return res.send({
+        success: false,
+        message: 'important field empty',
+        errors: [
+          {
+            field: 'email',
+            message: 'This field cannot be empty'
+          }
+        ]
+      })
+    } else if (!dob){
+      return res.send({
+        success: false,
+        message: 'important field empty',
+        errors: [
+          {
+            field: 'dob',
+            message: 'This field cannot be empty'
+          }
+        ]
+      })
+  // --- VALIDATIONS FOR PASSWORD LENGTH-----
+  } else if (passwardLenght < 8){
+    return res.send({
+      success: false,
+      message: 'Password is too short, min password lenght is 8',
+      errors: [
+        {
+          field: 'password',
+          message: 'Password too weak'
+        }
+      ]
+    })
+
+    //--- VALIDATIONS FOR REPEATED ENTRIES--------
+  } else if (duplicateUsername > 0){
+    return res.send({
+      success: false,
+      message: 'Select different username',
+      errors: [
+        {
+          field: 'username',
+          message: 'Username already exists'
+        }
+      ]
+    })
+  } else if (duplicateEmail > 0 ){
+    return res.send({
+      success: false,
+      message: 'Email address already exists',
+      errors: [
+        {
+          field: 'email',
+          message: 'Email already exists..'
+        }
+      ]
+    })
+    
+    // -----Successful Registration of a user------
+    } else {
+    // const userId = uuidv4();
+      let insertQuery = `insert into public.user(username, role, dob, email, hashed_password)
+      values('${user.username}', '${user.role}', '${user.dob}','${user.email}', '${hashed_password}')`;
+      
+      client.query(insertQuery, (err, result) => {
+          if (!err) {
+          // JWT 
+          let tokens = jwtTokens(user);
+          res.cookie('access_token', tokens.accessToken, {httpOnly:true});
+          res.cookie('refresh_token', tokens.refreshToken, {httpOnly:true});
+          res.send('Insertion was successful');
+          } else {
+          console.log(err.message);
+          }
+          });
+          client.end;
+      }
+    } catch (error) {
+      console.error('Error while registering, register again....', error);
+      res.status(500).json(
+        { message: 'Internal Server Error..'}
+        );
+    }
+      });
+    
+
 
 // -----------TO GET THE REFRESH TOKEN---------------
 app.get('/refresh_token', (req, res) =>{
@@ -144,106 +275,6 @@ app.get('/refresh_token', (req, res) =>{
 });
 
 
-//------------FOR LOGOUT----------------------------
-// to logout the user -- we basically will cleear cookie --- 
-// deleting  the jwt when user logs out 
-
-app.delete('/refresh_token', (req, res) => {
-  try {
-    res.clearCookie('refresh_token');
-    res.clearCookie('access_token');   // changed here 
-    return res.status(200).json({message: 'Logged out successfuly.'})
-  } catch (error) {
-    res.status(401).json(
-      {error: error.message}
-      );
-  }
-})
-
-
-
-
-
-//--------- FOR REGISTERING NEW USER---------------------- 
-app.post('/register', async (req, res) => {
-  try {
-  const user = req.body;
-  const hashed_password = bcrypt.hashSync(user.password, Number(process.env.SALT_ROUNDS));
-  // defactoring
-  const {username, email, dob} = req.body;
-
-  // to prevent repeated entry: 
-  const duplicateUsername = `SELECT user_id FROM public.user WHERE username = ${username}`;
-  const duplicateEmail = `SELECT user_id FROM public.user WHERE email = ${email}`;
-
-  //-----VALIDATION FOR EMPTY ENTRIES-----------
-  if (!username){
-    return res.send({
-      success: false,
-      message: 'important fields empty',
-      errors: [
-        {
-          field: 'username',
-          message: 'This field cannot be empty'
-        }
-      ]
-    })
-  } else if (!email){
-    return res.send({
-      success: false,
-      message: 'important field empty',
-      errors: [
-        {
-          field: 'email',
-          message: 'This field cannot be empty'
-        }
-      ]
-    })
-  } else if (!dob){
-    return res.send({
-      success: false,
-      message: 'important field empty',
-      errors: [
-        {
-          field: 'dob',
-          message: 'This field cannot be empty'
-        }
-      ]
-    })
-
-  //--- VALIDATIONS FOR REPEATED ENTRIES--------
-
-
-
-
-
-  } else {
-  // const userId = uuidv4();
-  let insertQuery = `insert into public.user(username, role, dob, email, hashed_password)
-  values('${user.username}', '${user.role}', '${user.dob}','${user.email}', '${hashed_password}')`;
-  
-  client.query(insertQuery, (err, result) => {
-      if (!err) {
-      // JWT 
-      let tokens = jwtTokens(user);
-      res.cookie('access_token', tokens.accessToken, {httpOnly:true});
-      res.cookie('refresh_token', tokens.refreshToken, {httpOnly:true});
-      res.send('Insertion was successful');
-      } else {
-      console.log(err.message);
-      }
-      });
-      client.end;
-    }
-    } catch (error) {
-      console.error('Error while registering, register again....', error);
-      res.status(500).json(
-        { message: 'Internal server error'}
-        );
-    }
-      });
-    
-
 
 // to start the server 
 app.listen(process.env.PORT, () => {
@@ -251,11 +282,8 @@ app.listen(process.env.PORT, () => {
 });
 
 
-
-
-
 // pagination
-// SELECT * FROM Games WHERE CreatedAt < @p1 ORDER BY CreatedAt DESC LIMIT  10
+// SELECT * FROM public.user WHERE CreatedAt < @p1 ORDER BY CreatedAt DESC LIMIT  10
 
 // first page 
-// SELECT * FROM Games ORDER BY CreatedAt DESC LIMIT 10 --- most recent user will be first 
+// SELECT * FROM public.user ORDER BY CreatedAt DESC LIMIT 10 --- most recent user will be first 
