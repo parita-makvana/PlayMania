@@ -23,8 +23,6 @@ const userRole = require('/Users/diptisharma/Desktop/PlayMania/middleware/userRo
 // changed from here -- to get the access of environment variables 
 dotenv.config();
 
-
-
 const app = express();
 app.use(express.json()); 
 app.use(bodyParser.json());
@@ -41,8 +39,9 @@ client.connect();
 
 
 // for genrating uuid
-const uuid = require('uuid');
 const { v4: uuidv4 } = require('uuid');
+
+
 
 
 // router 
@@ -72,15 +71,12 @@ app.get('/register', (req, res) => {
 //To view all users
 
 // router.get('/users', authenticateToken, (req, res,next) =>{
-
-
 // limit bydefault 5 -- offset pass through body 
 
 app.get('/users',isUserAuth, (req, res) => {
   try {
     client.query(`Select * from public.user `, (err, result) => {
-      console.log(result);
-    
+      // console.log(result);
       if (!err) {
       res.send(result.rows);
       } else {
@@ -93,11 +89,10 @@ app.get('/users',isUserAuth, (req, res) => {
     res.status(401).json({message: error.message})
   }
 });
- 
 
-  
+
+
 // Sign-In 
-
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -114,19 +109,16 @@ app.post('/login', async (req, res) => {
       return res.status(401).json(
         { message: 'Either email or password is wrong.. try again..' }
         );
-    }
-
-    // JWT 
-    let tokens = jwtTokens(result.rows[0]);
-    res.cookie('access_token', tokens.accessToken, {httpOnly:true});
-    res.cookie('refresh_token', tokens.refreshToken, {httpOnly:true});
-
-    // add this line afterwards to get the tokens as response 
-    // -- gives error when we try to send multiple responses 
-
-    // res.json(tokens);                                          // use this to get the access and refresh token
-    res.status(200).json({ message: 'Login successful' });
-    
+    } else {    let tokens = jwtTokens(result.rows[0]);
+      res.cookie('access_token', tokens.accessToken, {httpOnly:true});
+      res.cookie('refresh_token', tokens.refreshToken, {httpOnly:true});
+  
+      // add this line afterwards to get the tokens as response 
+      // -- gives error when we try to send multiple responses 
+  
+      // res.json(tokens);                                          // use this to get the access and refresh token
+      res.status(200).json({ message: 'Login successful' });
+      }
 
     // redirecting the user to the home page ----***------ frontend 
 
@@ -138,13 +130,11 @@ app.post('/login', async (req, res) => {
   }
 });
 
-
 // // for refresh token -- FRONT END -- to get the tokens
 app.get('/refresh_token', (req, res) =>{
   try {
     const refreshToken = req.cookies.refresh_token;
     // console.log(refreshToken);                         // getting the refresh token 
-
     if(refreshToken === null) {
       return res.status(401).json({error:'Null refresh token'})
     };
@@ -173,7 +163,7 @@ app.delete('/refresh_token', (req, res) => {
   try {
     
     res.clearCookie('refresh_token');
-    res.clearCookie('access_token');   // chnaged here 
+    res.clearCookie('access_token');   // changed here 
     return res.status(200).json({message: 'Logged out successfuly.'})
   } catch (error) {
     res.status(401).json(
@@ -185,6 +175,7 @@ app.delete('/refresh_token', (req, res) => {
 
 
 
+
 // Registering new user 
 app.post('/register', async (req, res) => {
   try {
@@ -193,6 +184,11 @@ app.post('/register', async (req, res) => {
   const hashed_password = bcrypt.hashSync(user.password, Number(process.env.SALT_ROUNDS));
 // 
   const {username, email, dob} = req.body;
+
+// to prevent repeated entry: 
+  const duplicateUsername = `SELECT user_id FROM public.user WHERE username = ${username}`;
+  const duplicateEmail = `SELECT user_id FROM public.user WHERE email = ${email}`;
+
 // adding validations  -- change to valid  status  codes
   if (!username){
     return res.send({
@@ -227,16 +223,41 @@ app.post('/register', async (req, res) => {
         }
       ]
     })
-  }
-// express validators -- instead of the above validators 
-// to prevent creation of the entry -- return 
-// for repeated entries -- validators 
+
+  // to prevent repeated entry validators---
+  //  } else if (duplicateUsername){
+  //   return res.send({
+  //     success: false,
+  //     message: 'Username already exists',
+  //     errors: [
+  //       {
+  //         field: 'username',
+  //         message: 'Username already exists..'
+  //       }
+  //     ]
+  //   })
+  // } else if (duplicateEmail){
+  //   return res.send({
+  //     success: false,
+  //     message: 'Email already exists',
+  //     errors: [
+  //       {
+  //         field: 'email',
+  //         message: 'Email already exists..'
+  //       }
+  //     ]
+  //   })
 
 
-// change the name of user.hashed_password to password in postman -- so change it in line 112 as well 
-  let insertQuery = `insert into public.user(user_id, username, role, dob, email, hashed_password, subscription_ends)
-  values((SELECT MAX(user_id) from public.user)+1, '${user.username}', '${user.role}', '${user.dob}','${user.email}', '${hashed_password}','${user.subscription_ends}')`;
 
+
+
+
+  } else {
+  // const userId = uuidv4();
+  let insertQuery = `insert into public.user(username, role, dob, email, hashed_password)
+  values('${user.username}', '${user.role}', '${user.dob}','${user.email}', '${hashed_password}')`;
+  
   client.query(insertQuery, (err, result) => {
       if (!err) {
       // JWT 
@@ -249,6 +270,8 @@ app.post('/register', async (req, res) => {
       }
       });
       client.end;
+    }
+
 
     } catch (error) {
       console.error('Error while registering, register again....', error);
@@ -257,10 +280,25 @@ app.post('/register', async (req, res) => {
         );
     }
       });
-      
+    
+
+
+
+
+
+
 
 // to start the server 
 app.listen(process.env.PORT, () => {
     console.log(`App running on port ${process.env.PORT}...`);
 });
 
+
+
+
+
+// pagination
+// SELECT * FROM Games WHERE CreatedAt < @p1 ORDER BY CreatedAt DESC LIMIT  10
+
+// first page 
+// SELECT * FROM Games ORDER BY CreatedAt DESC LIMIT 10 --- most recent user will be first 
