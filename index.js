@@ -70,20 +70,6 @@ const { v4: uuidv4 } = require('uuid');
 // router 
 const router = express.Router();
 
-// Routes FOR SIGN-IN  AND SIGN-UP pages 
-// For getting the Home page of the application 
-app.get('/', (req, res) => {
-  res.render('home.ejs')
-})
-// For getting the Sign-in page 
-app.get('/login', (req, res) => {
-  res.render('login.ejs')
-})
-// For getting the Sign-up page 
-app.get('/register', (req, res) => {
-  res.render('register.ejs')
-})
-
 
 // -----------------FOR ADMIN: TO GET ALL THE USERS---------------
 app.get('/users',isUserAuth, async (req, res) => {
@@ -104,7 +90,11 @@ app.get('/users',isUserAuth, async (req, res) => {
         res.send(users);
     // ----------------
   } catch (error) {
-    res.status(401).json({message: error.message})
+    if (error.name === 'UnauthorizedError') {
+      res.status(401).json({ message: 'Unauthorized' });
+    } else {
+      res.status(500).json({ message: error.message});
+    }
   }
 });
 
@@ -113,14 +103,6 @@ app.get('/users',isUserAuth, async (req, res) => {
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // // with sql queries
-    // const result = await client.query(`SELECT * FROM public.user WHERE email = '${email}' `);
-
-    // // comparing the password entered with the password stored 
-    // const users = result.rows[0]
-    // const validPassword = users? await bcrypt.compare(password, users.hashed_password):null;
-    
     // with orm
     const result = await User.findOne({ where: { email: email } });
     if (!result) {
@@ -130,13 +112,6 @@ app.post('/login', async (req, res) => {
     if (!validPassword) {
       return res.status(401).json({ message: 'Either email or password is wrong... try again.' });
     }
-
-    // database should have the encrypted password
-    // if ((!result || !result.rows || result.rows.length === 0) || (!validPassword) ){
-    //   return res.status(401).json(
-    //     { message: 'Either email or password is wrong.. try again..' }
-    //     );
-// }
     else { let tokens = jwtTokens(result);
       res.cookie('access_token', tokens.accessToken, {httpOnly:true});
       res.cookie('refresh_token', tokens.refreshToken, {httpOnly:true});
@@ -191,16 +166,6 @@ app.post('/register', async (req, res) => {
     email = req.body.email.toLowerCase();
 
     // to prevent repeated entry: 
-    // sql query
-
-    // const isUsernameAlreadyRegistered = `SELECT COUNT(*) FROM public.user WHERE username = '${username}'`;
-    // const isEmailAlreadyRegistered = `SELECT COUNT(*) FROM public.user WHERE email = '${email}'`;
-    // const usernameResult = await client.query(isUsernameAlreadyRegistered);
-    // const emailResult = await client.query(isEmailAlreadyRegistered);
-    // const duplicateUsername = usernameResult.rows[0].count;
-    // const duplicateEmail = emailResult.rows[0].count;
-
-
     // orm 
     const usernameResult = await User.count({ where: { username: username } });
     const emailResult = await User.count({ where: { email: email } });
@@ -208,13 +173,12 @@ app.post('/register', async (req, res) => {
     const duplicateEmail = emailResult;
 
 
-
     //check
     const passwordLenght = (user.password).length
   
     //-----VALIDATION FOR EMPTY ENTRIES-----------  --- add the status code 401 in the response 
     if (!username){
-      return res.send({
+      return res.status(401).send({
         success: false,
         message: 'important fields empty',
         errors: [
@@ -225,7 +189,7 @@ app.post('/register', async (req, res) => {
         ]
       })
     } else if (!email){
-      return res.send({
+      return res.status(401).send({
         success: false,
         message: 'important field empty',
         errors: [
@@ -236,7 +200,7 @@ app.post('/register', async (req, res) => {
         ]
       })
     } else if (!dob){
-      return res.send({
+      return res.status(401).send({
         success: false,
         message: 'important field empty',
         errors: [
@@ -248,7 +212,7 @@ app.post('/register', async (req, res) => {
       })
   // --- VALIDATIONS FOR PASSWORD LENGTH-----
   } else if (passwordLenght < 8){
-    return res.send({
+    return res.status(401).send({
       success: false,
       message: 'Password is too short, min password lenght is 8',
       errors: [
@@ -261,7 +225,7 @@ app.post('/register', async (req, res) => {
 
   //--- Validation for repeated entries--------
   } else if (duplicateUsername > 0){
-    return res.send({
+    return res.status(401).send({
       success: false,
       message: 'Select different username',
       errors: [
@@ -272,7 +236,7 @@ app.post('/register', async (req, res) => {
       ]
     })
   } else if (duplicateEmail > 0 ){
-    return res.send({
+    return res.status(401).send({
       success: false,
       message: 'Email address already exists',
       errors: [
@@ -285,25 +249,6 @@ app.post('/register', async (req, res) => {
     
     // -----Successful Registration of a user------
     } else {
-    // const userId = uuidv4();
-
-      // code with sql queries 
-      // let insertQuery = `insert into public.user(username, role, dob, email, hashed_password)
-      // values('${user.username}', '${user.role}', '${user.dob}','${user.email}', '${hashed_password}')`;
-      
-      // client.query(insertQuery, (err, result) => {
-      //     if (!err) {
-      //     // JWT 
-      //     let tokens = jwtTokens(user);
-      //     res.cookie('access_token', tokens.accessToken, {httpOnly:true});
-      //     res.cookie('refresh_token', tokens.refreshToken, {httpOnly:true});
-      //     res.send('Insertion was successful');
-      //     } else {
-      //     console.log(err.message);
-      //     }
-      //     });
-      //     client.end;
-
       // code with orm 
       const user_id = uuidv4();
 
@@ -332,8 +277,7 @@ app.post('/register', async (req, res) => {
       } else {
         console.log('Error during insertion');
       }
-      
-
+    
       }
     } catch (error) {
       console.error('Error while registering, register again....', error);
@@ -369,70 +313,6 @@ app.get('/refresh_token', (req, res) =>{
       );
   }
 });
-
-
-// // ---FORGOT PASSWORD-----
-// app.patch('/forgot-password', async (req, res) => {
-  // const { email } = req.body;
-//   // console.log(user);               -- undefined 
-//   // console.log(email);              -- email we are getting 
-//   try {
-//     if(!email) {
-//       res.status(404).json({ error: "Invalid email, Please register to the app..." });
-//     } else {
-//       // if email found then we will create a temporary tokken that expires in certain time 
-//       const resetLink = jwt.sign({ user: email }, 
-//         resetSecret, { expiresIn: process.env.EXPIRATION_TIME_RESET_TOKEN });
-//         // update resetLink property to be the temporary token and then sending email
-//         await update(email, { resetLink });
-//         sendMail(email, resetLink);                                                              // in utils will create a function 
-//       res.status(200).json({ message: "Check your email"} );
-//     }
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// });
-
-
-// //------- UPDATING NEW PASSWORD ---------
-// app.patch('/reset-password/:token', async (req, res) => {
-//   const resetLink = req.body.tokens                                // prompt to tokens -- check once 
-//   const newPassword = req.body
-//   // if there is a token we need to decoded and check for no errors
-//   if(resetLink) {
-//     jwt.verify(resetLink, resetPassword, (error, decodedToken) => {
-//           if(error) {
-//             res.status().json({ message: 'Token is expired or is Invalid please register..' })
-//           }
-//     })
-//   }
-//   try {
-//     // find user by the temporary token we stored earlier
-//     const [user] = await filterBy({ resetLink });
-//     // if there is no user, send back an error
-//     if(!user) {
-//       res.status(400).json({ message: 'User not found Please register first to the application..' });
-//     }
-
-//     // otherwise we need to hash the new password  before saving it in the database
-//     const hashPassword = bcrypt.hashSync(newPassword.password, 8);
-//     newPassword.password = hashPassword;
-
-//     // update user credentials and remove the temporary link from database/cookie before saving
-//     const updatedCredentials = {
-//       password: newPassword.password,
-//       resetLink: null
-//     }
-
-//     await update(email, updatedCredentials);
-//     res.status(200).json({ message: 'Password updated' });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// })
-
-
-// WILL HAVE TO MAKE CHANGES IN DB FOR CARRYING OUT THIS TASK 
 
 
 
