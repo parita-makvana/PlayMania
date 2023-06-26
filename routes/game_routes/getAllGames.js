@@ -1,5 +1,5 @@
-const Game = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/models/game.js');
-const sequelize = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/config/db.js');
+const Game = require('../../models/game');
+const sequelize = require('../../config/database');
 const { Op, QueryTypes } = require('sequelize');
 
 const getAllGames = async (req, res) => {

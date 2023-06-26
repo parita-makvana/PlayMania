@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
-const sequelize = require('/Users/diptisharma/Desktop/PlayMania/config/database.js');
+const sequelize = require('../config/database');
 
+console.log(`${__dirname}`);
 const User = sequelize.define('user', {
   user_id: {
     type: Sequelize.UUID,
@@ -30,9 +31,9 @@ const User = sequelize.define('user', {
   role: {
     type: Sequelize.ENUM('buyer', 'seller'),
   },
-  resetLink:{
+  resetLink: {
     type: Sequelize.STRING,
-  }
+  },
 });
 
 module.exports = User;

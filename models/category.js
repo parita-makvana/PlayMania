@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../config/db');
+const sequelize = require('../config/database');
 
 const Category = sequelize.define('category', {
   category_id: {

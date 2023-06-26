@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../config/db');
-const User = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/models/user.js');
-const Game = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/models/game.js');
+const sequelize = require('../config/database');
+const User = require('../models/user');
+const Game = require('../models/game');
 
 const Cart = sequelize.define('cart', {
   cart_id: {

@@ -1,5 +1,5 @@
 // from nodemailer
-const User = require('/Users/diptisharma/Desktop/PlayMania/models/user.js');
+const User = require('../models/user');
 const nodemailer = require('nodemailer');
 
 const sendMail = async (email, tokens) => {
@@ -36,7 +36,7 @@ const sendMail = async (email, tokens) => {
         <p>PlayMania Team</p>
       `,
     };
-    
+
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error(error);

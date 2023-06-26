@@ -1,8 +1,8 @@
 // Add to cart
 
 const { v4: uuidv4 } = require('uuid');
-const Cart = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/models/cart.js');
-const sequelize = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/config/db.js');
+const Cart = require('../../models/cart');
+const sequelize = require('../../config/database');
 
 const addToCart = async (req, res) => {
   try {

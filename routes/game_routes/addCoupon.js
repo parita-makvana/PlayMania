@@ -1,6 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
-const Coupon = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/models/coupon.js');
-const sequelize = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/config/db.js');
+const Coupon = require('../../models/coupon');
+const sequelize = require('../../config/database.js');
 
 const addCoupon = async (req, res) => {
   try {

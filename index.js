@@ -5,11 +5,11 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 
 // from ORM
-const User = require('/Users/diptisharma/Desktop/PlayMania/models/user.js');
+const User = require('./models/user');
 const Game = require('./models/game');
 const Category = require('./models/category');
 const Coupon = require('./models/coupon');
-const sequelize = require('/Users/diptisharma/Desktop/PlayMania/config/database.js');
+const sequelize = require('./config/database');
 
 //PARENT --hasmany-- CHILD FK
 User.hasMany(Game, {
@@ -66,7 +66,7 @@ sequelize
 // to get the jwtwebtoken
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const jwtTokens = require('/Users/diptisharma/Desktop/PlayMania/utils/jwt-helpers.js');
+const jwtTokens = require('./utils/jwt-helpers');
 const cookieParser = require('cookie-parser');
 const corsOptions = { credentials: true, origin: '*' };
 
@@ -78,19 +78,16 @@ const sendGridKey = process.env.SENDGRID_KEY;
 const resetSecret = process.env.RESET_SECRET;
 
 // importing the functions for forgot password and reset link
-const sendMail = require('/Users/diptisharma/Desktop/PlayMania/utils/sendMail.js');
-const {
-  filterBy,
-  update,
-} = require('/Users/diptisharma/Desktop/PlayMania/utils/filterBy.js');
+const sendMail = require('./utils/sendMail');
+const { filterBy, update } = require('./utils/filterBy');
 // const update = require('/Users/diptisharma/Desktop/PlayMania/utils/filterBy.js')
 
 // FOR AUTHENTICATION
-const authenticateToken = require('/Users/diptisharma/Desktop/PlayMania/middleware/authorization.js');
+const authenticateToken = require('./middleware/authorization');
 // for signup
-const isUserAuth = require('/Users/diptisharma/Desktop/PlayMania/middleware/isUserAuth.js');
+const isUserAuth = require('./middleware/isUserAuth');
 // for role specific
-const userRole = require('/Users/diptisharma/Desktop/PlayMania/middleware/userRoles.js');
+const userRole = require('./middleware/userRoles');
 
 //to get the access of environment variables
 dotenv.config();
@@ -110,26 +107,26 @@ const { v4: uuidv4 } = require('uuid');
 const router = express.Router();
 
 // Refacotred code
-const getAllUsers = require('/Users/diptisharma/Desktop/PlayMania/routes/getAllUsers.js');
-const userLogin = require('/Users/diptisharma/Desktop/PlayMania/routes/userLogin.js');
-const userLogout = require('/Users/diptisharma/Desktop/PlayMania/routes/userLogout.js');
-const newUserRegistration = require('/Users/diptisharma/Desktop/PlayMania/routes/newUserRegistration.js');
-const forgotPassword = require('/Users/diptisharma/Desktop/PlayMania/routes/forgotPassword.js');
-const refreshToken = require('./routes/refreshToken');
-const updatePassword = require('/Users/diptisharma/Desktop/PlayMania/routes/updatePassword.js');
+const getAllUsers = require('./routes/user_routes/getAllUsers');
+const userLogin = require('./routes/user_routes/userLogin');
+const userLogout = require('./routes/user_routes/userLogout');
+const newUserRegistration = require('./routes/user_routes/newUserRegistration');
+const forgotPassword = require('./routes/user_routes/forgotPassword');
+const refreshToken = require('./routes/user_routes/refreshToken');
+const updatePassword = require('./routes/user_routes/updatePassword');
 
 // ************** Game code refactoring **************
-const addCategory = require('./routes/addCategory');
-const getAllCategory = require('./routes/getAllCategory');
-const deleteCategory = require('./routes/deleteCategory');
-const addGame = require('./routes/addGame');
-const getAllGames = require('./routes/getAllGames');
-const deleteGame = require('./routes/deleteGame');
-const addCoupon = require('./routes/addCoupon');
-const deleteCoupon = require('./routes/deleteCoupon');
-const addToCart = require('./routes/addToCart');
-const deleteFromCart = require('./routes/deleteFromCart');
-const checkout = require('./routes/checkout');
+const addCategory = require('./routes/game_routes/addCategory');
+const getAllCategory = require('./routes/game_routes/getAllCategory');
+const deleteCategory = require('./routes/game_routes/deleteCategory');
+const addGame = require('./routes/game_routes/addGame');
+const getAllGames = require('./routes/game_routes/getAllGames');
+const deleteGame = require('./routes/game_routes/deleteGame');
+const addCoupon = require('./routes/game_routes/addCoupon');
+const deleteCoupon = require('./routes/game_routes/deleteCoupon');
+const addToCart = require('./routes/game_routes/addToCart');
+const deleteFromCart = require('./routes/game_routes/deleteFromCart');
+const checkout = require('./routes/game_routes/checkout');
 
 // -----------------FOR ADMIN: TO GET ALL THE USERS---------------
 app.route('/users').get(isUserAuth, getAllUsers);

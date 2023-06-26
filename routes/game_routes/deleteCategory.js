@@ -1,5 +1,5 @@
-const Category = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/models/category.js');
-const sequelize = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/config/db.js');
+const Category = require('../../models/category');
+const sequelize = require('../../config/database');
 
 const deleteCategory = async (req, res) => {
   try {
