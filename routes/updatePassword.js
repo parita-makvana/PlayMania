@@ -10,6 +10,7 @@ const sequelize = require('/Users/diptisharma/Desktop/PlayMania/config/database.
 
 
 
+
 // to get the jwtwebtoken 
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
