@@ -1,4 +1,4 @@
-const Category = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/models/category.js');
+const Category = require('../../models/category');
 
 const getAllCategory = async (req, res) => {
   try {

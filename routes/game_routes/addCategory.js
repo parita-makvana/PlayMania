@@ -1,6 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
-const Category = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/models/category.js');
-const sequelize = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/config/db.js');
+const Category = require('../../models/category');
+const sequelize = require('../../config/database');
 
 const addCategory = async (req, res) => {
   try {

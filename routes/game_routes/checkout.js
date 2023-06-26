@@ -1,8 +1,8 @@
-const Game_purchased = require('../models/game_purchased');
-const Game = require('../models/game');
-const Coupon = require('../models/coupon');
+const Game_purchased = require('../../models/game_purchased');
+const Game = require('../../models/game');
+const Coupon = require('../../models/coupon');
 const { v4: uuidv4 } = require('uuid');
-const sequelize = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/config/db.js');
+const sequelize = require('../../config/database');
 
 const checkout = async (req, res) => {
   const { game_id } = req.body;

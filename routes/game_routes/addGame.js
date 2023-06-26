@@ -1,8 +1,8 @@
 const { v4: uuidv4 } = require('uuid');
-const User = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/models/user.js');
-const Game = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/models/game.js');
-const Category = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/models/category.js');
-const sequelize = require('/Users/paritamakvana/Desktop/MyPlayMania/PlayMania-Backened/config/db.js');
+const User = require('../../models/user');
+const Game = require('../../models/game');
+const Category = require('../../models/category');
+const sequelize = require('../../config/database');
 
 const addGame = async (req, res) => {
   const {
