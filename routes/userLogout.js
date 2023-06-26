@@ -54,4 +54,5 @@ const userLogout = (req, res) => {
     }
 }
 
+
 module.exports = userLogout;

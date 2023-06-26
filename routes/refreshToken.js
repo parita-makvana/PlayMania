@@ -9,13 +9,14 @@ const User = require('/Users/diptisharma/Desktop/PlayMania/models/user.js');
 const sequelize = require('/Users/diptisharma/Desktop/PlayMania/config/database.js'); 
 
 
-
 // to get the jwtwebtoken 
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const jwtTokens = require('/Users/diptisharma/Desktop/PlayMania/utils/jwt-helpers.js');
 const cookieParser = require('cookie-parser');
 const corsOptions = {credentials:true, origin: '*'};
+
+
 
 
 

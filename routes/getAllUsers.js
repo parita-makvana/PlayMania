@@ -35,7 +35,6 @@ app.use(bodyParser.json());
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
-
 // -----------------FOR ADMIN: TO GET ALL THE USERS---------------
 const getAllUsers =  async (req, res) => {
     try {
