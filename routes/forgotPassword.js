@@ -8,18 +8,6 @@ const dotenv = require('dotenv');
 const User = require('/Users/diptisharma/Desktop/PlayMania/models/user.js');
 const sequelize = require('/Users/diptisharma/Desktop/PlayMania/config/database.js'); 
 
-//CONNECTION
-sequelize
-  .sync()                         // .sync({force:true})
-  .then((result) => {
-    // console.log(result);
-  })
-  .catch((err) => {
-    // console.log(err);
-  });
-
-
-
 // to get the jwtwebtoken 
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
