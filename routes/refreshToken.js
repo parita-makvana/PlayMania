@@ -68,43 +68,29 @@ const { v4: uuidv4 } = require('uuid');
 // router 
 const router = express.Router();
 
+const refreshToken = (req, res) =>{
+    try {
+      const refreshToken = req.cookies.refresh_token;
+      // console.log(refreshToken);                         // getting the refresh token 
+      if(refreshToken === null) {
+        return res.status(401).json({error:'Null refresh token'})
+      };
+  
+      // to verify that the refresh token generated through our refresh token 
+      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, user) =>{
+        if (error) return res.status(403).json({error:error.message});
+  
+        let tokens = jwtTokens(user);
+        res.cookie('refresh_token', tokens.refreshToken, {httpOnly:true});
+        // to get the tokens through api
+        res.json(tokens);
+      })
+  
+    } catch (error) {
+      res.status(401).json(
+        {error: error.message}
+        );
+    }
+  };
 
-// Refacotred code
-const getAllUsers = require('/Users/diptisharma/Desktop/PlayMania/routes/getAllUsers.js');
-const userLogin = require('/Users/diptisharma/Desktop/PlayMania/routes/userLogin.js');
-const userLogout = require('/Users/diptisharma/Desktop/PlayMania/routes/userLogout.js');
-const newUserRegistration = require('/Users/diptisharma/Desktop/PlayMania/routes/newUserRegistration.js');
-const forgotPassword = require('/Users/diptisharma/Desktop/PlayMania/routes/forgotPassword.js');
-const refreshToken = require('./routes/refreshToken');
-const updatePassword = require('/Users/diptisharma/Desktop/PlayMania/routes/updatePassword.js');
-
-// -----------------FOR ADMIN: TO GET ALL THE USERS---------------
-app.route('/users').get(isUserAuth, getAllUsers)             
-
-// ----------------FOR LOGIN----------------------        
-app.route('/login').post(userLogin);   
-// ---- USER SPECIFIC-------
-
-
-//------------FOR LOGOUT----------------------------
-app.route('/logout').delete(userLogout);  
-
-
-//--------- FOR REGISTERING NEW USER---------------------- 
-app.route('/register').post(newUserRegistration);   
-      
-
-// ---FORGOT PASSWORD-----
-app.route('/forgot-password').patch(forgotPassword); 
-
-
-//------- UPDATING NEW PASSWORD ---------
-app.route('/reset-password/:token').patch(updatePassword); 
-
-// -----------TO GET THE REFRESH TOKEN---------------
-app.route('/refresh_token').get(refreshToken); 
-
-// to start the server 
-app.listen(process.env.PORT, () => {
-    console.log(`App running on port ${process.env.PORT}...`);
-});
+  module.exports = refreshToken;

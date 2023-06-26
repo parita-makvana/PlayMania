@@ -19,14 +19,12 @@ sequelize
   });
 
 
-
 // to get the jwtwebtoken 
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const jwtTokens = require('/Users/diptisharma/Desktop/PlayMania/utils/jwt-helpers.js');
 const cookieParser = require('cookie-parser');
 const corsOptions = {credentials:true, origin: '*'};
-
 
 
 // FOR FORGOT PASSWORD AND RESET LINK 
@@ -61,50 +59,47 @@ app.use(bodyParser.json());
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
-
 // orm
 const { v4: uuidv4 } = require('uuid');
-
 // router 
 const router = express.Router();
 
 
-// Refacotred code
-const getAllUsers = require('/Users/diptisharma/Desktop/PlayMania/routes/getAllUsers.js');
-const userLogin = require('/Users/diptisharma/Desktop/PlayMania/routes/userLogin.js');
-const userLogout = require('/Users/diptisharma/Desktop/PlayMania/routes/userLogout.js');
-const newUserRegistration = require('/Users/diptisharma/Desktop/PlayMania/routes/newUserRegistration.js');
-const forgotPassword = require('/Users/diptisharma/Desktop/PlayMania/routes/forgotPassword.js');
-const refreshToken = require('./routes/refreshToken');
-const updatePassword = require('/Users/diptisharma/Desktop/PlayMania/routes/updatePassword.js');
+const updatePassword = async (req, res) => {
+    const resetLink = req.params.token;
+  
+    if (!resetLink) {
+      res.status(401).json({ message: 'Invalid token' });
+      return;
+    }
+    jwt.verify(resetLink, process.env.RESET_SECRET, async (error, decodedToken) => {
+      if (error) {
+        res.status(401).json({ message: 'Incorrect token or expired' });
+        return;
+      }
+      try {
+        const newPassword = req.body;
+        const [user] = await filterBy({ resetLink });
+        if (!user) {
+          res.status(401).json({ message: 'Try resetting again..' });
+          return;
+        }
+        // creating a hashed password for the user 
+        const hashPassword = bcrypt.hashSync(newPassword.newPassword, Number(process.env.SALT_ROUNDS));
+  
+        const updatedCredentials = {
+          password: hashPassword,
+          resetLink: null
+        };
+  
+        await update(user.user_id, updatedCredentials);
+  
+        res.status(200).json({ message: 'Password updated' });
+      } catch (error) {
+        res.status(500).json({ message: error.message });
+      }
+    });
+  };
+  
 
-// -----------------FOR ADMIN: TO GET ALL THE USERS---------------
-app.route('/users').get(isUserAuth, getAllUsers)             
-
-// ----------------FOR LOGIN----------------------        
-app.route('/login').post(userLogin);   
-// ---- USER SPECIFIC-------
-
-
-//------------FOR LOGOUT----------------------------
-app.route('/logout').delete(userLogout);  
-
-
-//--------- FOR REGISTERING NEW USER---------------------- 
-app.route('/register').post(newUserRegistration);   
-      
-
-// ---FORGOT PASSWORD-----
-app.route('/forgot-password').patch(forgotPassword); 
-
-
-//------- UPDATING NEW PASSWORD ---------
-app.route('/reset-password/:token').patch(updatePassword); 
-
-// -----------TO GET THE REFRESH TOKEN---------------
-app.route('/refresh_token').get(refreshToken); 
-
-// to start the server 
-app.listen(process.env.PORT, () => {
-    console.log(`App running on port ${process.env.PORT}...`);
-});
+module.exports = updatePassword;
