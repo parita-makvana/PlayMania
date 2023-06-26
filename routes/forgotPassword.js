@@ -15,8 +15,6 @@ const jwtTokens = require('/Users/diptisharma/Desktop/PlayMania/utils/jwt-helper
 const cookieParser = require('cookie-parser');
 const corsOptions = {credentials:true, origin: '*'};
 
-
-
 // FOR FORGOT PASSWORD AND RESET LINK 
 const sgMail = require('@sendgrid/mail');
 const nodemailer = require("nodemailer");

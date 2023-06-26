@@ -31,7 +31,6 @@ const sendMail = require('/Users/diptisharma/Desktop/PlayMania/utils/sendMail.js
 const {filterBy, update} = require('/Users/diptisharma/Desktop/PlayMania/utils/filterBy.js')
 // const update = require('/Users/diptisharma/Desktop/PlayMania/utils/filterBy.js')
 
-
 // FOR AUTHENTICATION
 const authenticateToken = require('/Users/diptisharma/Desktop/PlayMania/middleware/authorization.js');
 // for signup
