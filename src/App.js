@@ -9,8 +9,8 @@ function App() {
     <div className="App">
       <Header />
       {/* <RegistrationForm /> */}
-      <CategoryForm />
-      {/* <GameForm /> */}
+      {/* <CategoryForm /> */}
+      <GameForm />
     </div>
   );
 }
