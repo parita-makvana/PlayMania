@@ -1,5 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../config/database');
+const Category = require('../models/category');
+const User = require('../models/user');
 
 const Game = sequelize.define('game', {
   game_id: {
@@ -43,6 +45,34 @@ const Game = sequelize.define('game', {
   },
   game_image: {
     type: Sequelize.BLOB('long'),
+  },
+});
+
+User.hasMany(Game, {
+  foreignKey: {
+    name: 'user_id_fk',
+    field: 'user_id',
+  },
+});
+
+Game.belongsTo(User, {
+  foreignKey: {
+    name: 'user_id_fk',
+    field: 'user_id',
+  },
+});
+
+Category.hasMany(Game, {
+  foreignKey: {
+    name: 'category_id_fk',
+    field: 'category_id',
+  },
+});
+
+Game.belongsTo(Category, {
+  foreignKey: {
+    name: 'category_id_fk',
+    field: 'category_id',
   },
 });
 
