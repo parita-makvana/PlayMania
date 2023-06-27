@@ -17,16 +17,16 @@ const addGame = async (req, res) => {
   const game_id = uuidv4();
   const user_id = req.params.userID;
 
-  try {
-    const user = await User.findOne({
-      raw: true,
-      where: { user_id: user_id },
-    });
-    user_role = user.role;
-  } catch (error) {
-    console.error(error);
-    res.status(404).json({ error: 'User not found' });
-  }
+  // try {
+  const user = await User.findOne({
+    raw: true,
+    where: { user_id: user_id },
+  });
+  user_role = user.role;
+  // } catch (error) {
+  //   console.error(error);
+  //   res.status(404).json({ error: 'User not found' });
+  // }
 
   try {
     const category = await Category.findOne({

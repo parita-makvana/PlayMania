@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../config/database');
+const Game = require('../models/game');
 
 const Coupon = sequelize.define('coupon', {
   coupon_id: {
@@ -23,6 +24,19 @@ const Coupon = sequelize.define('coupon', {
   },
   coupon_discount: {
     type: Sequelize.INTEGER,
+  },
+});
+
+Game.hasMany(Coupon, {
+  foreignKey: {
+    name: 'game_id_fk',
+    field: 'game_id',
+  },
+});
+Coupon.belongsTo(Game, {
+  foreignKey: {
+    name: 'game_id_fk',
+    field: 'game_id',
   },
 });
 

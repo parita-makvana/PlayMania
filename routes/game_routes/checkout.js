@@ -13,6 +13,17 @@ const checkout = async (req, res) => {
   const trans_id = uuidv4();
 
   try {
+    const coupon = await Coupon.findOne({
+      raw: true,
+      where: { game_id: game_id },
+    });
+    couponDiscount = coupon.coupon_discount;
+  } catch (error) {
+    console.error(error);
+    res.status(404).json({ error: 'Coupon Not Found!' });
+  }
+
+  try {
     const game = await Game.findOne({
       raw: true,
       where: { game_id: game_id },
@@ -23,16 +34,6 @@ const checkout = async (req, res) => {
       res.status(200).json({ message: 'Game installed successfully!' });
     } else if (game_type == 'paid') {
       price = game.price;
-      try {
-        const coupon = await Coupon.findOne({
-          raw: true,
-          where: { game_id: game_id },
-        });
-        couponDiscount = coupon.coupon_discount;
-      } catch (error) {
-        console.error(error);
-        res.status(404).json({ error: 'Coupon Not Found!' });
-      }
     }
   } catch (error) {
     console.error(error);
