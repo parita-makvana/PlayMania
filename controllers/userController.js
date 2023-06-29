@@ -16,7 +16,7 @@ const User = require('../models/user');
 
 // to get the jwtwebtoken 
 const jwt = require('jsonwebtoken');
-const jwtTokens = require('../utils/jwt-helpers');
+const jwtTokens = require('../utils/jwtHelpers');
 
 
 // FOR FORGOT PASSWORD AND RESET LINK 
