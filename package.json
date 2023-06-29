@@ -4,7 +4,7 @@
   "description": "The app where user can buy games and seller can sell the games",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha --recursive --exit",
     "start": "nodemon index.js"
   },
   "author": "Dipti Sharma",
@@ -30,6 +30,7 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "jest": "^29.5.0",
     "nodemon": "^2.0.22"
   }
 }
