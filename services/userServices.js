@@ -21,7 +21,7 @@ const sequelize = require('../config/database');
 // to get the jwtwebtoken 
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const jwtTokens = require('../utils/jwt-helpers');
+const jwtTokens = require('../utils/jwtHelpers');
 const cookieParser = require('cookie-parser');
 const corsOptions = {credentials:true, origin: '*'};
 

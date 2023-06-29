@@ -16,21 +16,21 @@ app.use(bodyParser.json());
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
-// 
-const sequelize = require('./config/database'); 
 
-//CONNECTION
-sequelize
-  .sync()                         // .sync({force:true})
-  .then((result) => {
-  })
-  .catch((err) => {
-  });
+// const sequelize = require('./config/database'); 
 
-// for refactoring 
+// //CONNECTION
+// sequelize
+//   .sync()                         // .sync({force:true})
+//   .then((result) => {
+//   })
+//   .catch((err) => {
+//   });
+
+// User
 app.use('/', userRouter);
 
-// ************** GAME **************
+// Game 
 app.use('/game', gameRoutes);
 
 // to start the server
