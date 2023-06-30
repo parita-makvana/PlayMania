@@ -1,10 +1,4 @@
-// to get the specific user 
-// const client = require("../config/db");
-
-// with orm -- we can use knex 
-
 const User = require('../models/user.js');
-const sequelize = require('../config/database.js'); 
 
 const filterBy = (filter) => {
 return User.findAll({

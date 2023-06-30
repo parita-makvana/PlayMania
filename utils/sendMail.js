@@ -4,10 +4,7 @@ const nodemailer = require('nodemailer');
 
 const sendMail = async (email, tokens) => {
   try {
-    // Fetch the user from the User model using the provided email
     const result = await User.findOne({ where: { email: email } });
-
-    // Check if the user exists and has an email
     if (!result || !result.email) {
       console.error('User not found or email is missing');
       return;
@@ -20,7 +17,7 @@ const sendMail = async (email, tokens) => {
       },
     });
 
-    const clientURL = 'http://localhost:3000'; // Replace with your actual client URL
+    const clientURL = 'http://localhost:3000'; // Have replace with updated url from front end 
     const mailOptions = {
       from: process.env.USER_EMAIL,
       to: email,

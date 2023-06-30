@@ -7,5 +7,4 @@ const jwtTokens = ({user_id, username, email}) => {
     return ({accessToken, refreshToken});
 }
 
-// export {jwtTokens};
 module.exports = jwtTokens;
