@@ -14,11 +14,6 @@ const jwt = require('jsonwebtoken');
 const sendMail = require('../utils/sendMail');
 const { filterBy, update } = require('../utils/filterBy.js');
 
-const corsOptions = { credentials: true, origin: '*' };
-
-app.use(cors(corsOptions));
-app.use(cookieParser());
-
 // Get all users
 exports.getAllUsers = async () => {
   try {
