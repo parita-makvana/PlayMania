@@ -1,9 +1,9 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../config/database');
-const Game = require('../models/game');
-const User = require('../models/user');
+const Game = require('./game');
+const User = require('./user');
 
-const Game_purchased = sequelize.define('game_purchased', {
+const gamePurchased = sequelize.define('gamePurchased ', {
   transaction_id: {
     type: Sequelize.UUID,
     autoIncrement: false,
@@ -26,32 +26,32 @@ const Game_purchased = sequelize.define('game_purchased', {
   },
 });
 
-Game.hasMany(Game_purchased, {
+Game.hasMany(gamePurchased, {
   foreignKey: {
     name: 'game_id_fk',
     field: 'game_id',
   },
 });
 
-Game_purchased.belongsTo(Game, {
+gamePurchased.belongsTo(Game, {
   foreignKey: {
     name: 'game_id_fk',
     field: 'game_id',
   },
 });
 
-User.hasMany(Game_purchased, {
+User.hasMany(gamePurchased, {
   foreignKey: {
     name: 'user_id_fk',
     field: 'user_id',
   },
 });
 
-Game_purchased.belongsTo(User, {
+gamePurchased.belongsTo(User, {
   foreignKey: {
     name: 'user_id_fk',
     field: 'user_id',
   },
 });
 
-module.exports = Game_purchased;
+module.exports = gamePurchased;
