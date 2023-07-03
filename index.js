@@ -17,8 +17,9 @@ const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
 
-// const sequelize = require('./config/database'); 
 
+
+// const sequelize = require('./config/database'); 
 // //CONNECTION
 // sequelize
 //   .sync()                         // .sync({force:true})
