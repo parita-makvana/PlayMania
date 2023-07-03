@@ -4,7 +4,7 @@ const app = express();
 app.use(express.json());
 app.use(bodyParser.json());
 
-const User = require('../models/User');
+const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const jwtTokens = require('../utils/jwtHelpers');
@@ -29,11 +29,20 @@ exports.userLogin = async (email, password) => {
   try {
     const result = await User.findOne({ where: { email: email } });
     if (!result) {
-      return { statusCode: 401, message: 'Either email or password is wrong... try again.' };
+      return {
+        statusCode: 401,
+        message: 'Either email or password is wrong... try again.',
+      };
     }
-    const validPassword = await bcrypt.compare(password, result.hashed_password);
+    const validPassword = await bcrypt.compare(
+      password,
+      result.hashed_password
+    );
     if (!validPassword) {
-      return { statusCode: 401, message: 'Either email or password is wrong... try again.' };
+      return {
+        statusCode: 401,
+        message: 'Either email or password is wrong... try again.',
+      };
     }
     const tokens = jwtTokens(result);
     return { statusCode: 200, message: 'Login successful', tokens };
@@ -46,14 +55,17 @@ exports.userLogin = async (email, password) => {
 exports.createUser = async (user) => {
   const { username, role, dob, email, password } = user;
   const user_id = uuidv4();
-  const hashed_password = bcrypt.hashSync(password, Number(process.env.SALT_ROUNDS));
+  const hashed_password = bcrypt.hashSync(
+    password,
+    Number(process.env.SALT_ROUNDS)
+  );
   const createdUser = await User.create({
     user_id: user_id,
     username: username,
     role: role,
     dob: dob,
     email: email,
-    hashed_password: hashed_password
+    hashed_password: hashed_password,
   });
   return createdUser;
 };
@@ -75,8 +87,9 @@ exports.forgotPassword = async (email, resetSecret) => {
     if (!user) {
       return { error: 'Invalid email' };
     } else {
-      const resetLink = jwt.sign({ user: user.email },
-        resetSecret, { expiresIn: process.env.EXPIRATION_TIME_RESET_TOKEN });
+      const resetLink = jwt.sign({ user: user.email }, resetSecret, {
+        expiresIn: process.env.EXPIRATION_TIME_RESET_TOKEN,
+      });
       await update(user.user_id, { resetLink });
       sendMail(user.email, resetLink);
       return { message: 'Check your email' };
@@ -103,10 +116,13 @@ exports.updatePassword = async (resetLink, newPassword, resetSecret) => {
           reject(new Error('Try resetting again..'));
           return;
         }
-        const hashedPassword = bcrypt.hashSync(newPassword, Number(process.env.SALT_ROUNDS));
+        const hashedPassword = bcrypt.hashSync(
+          newPassword,
+          Number(process.env.SALT_ROUNDS)
+        );
         const updatedCredentials = {
           password: hashedPassword,
-          resetLink: null
+          resetLink: null,
         };
         await update(user.user_id, updatedCredentials);
         resolve('Password updated');
