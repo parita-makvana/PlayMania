@@ -1,0 +1,36 @@
+{
+  "name": "playmania",
+  "version": "1.0.0",
+  "description": "The app where user can buy games and seller can sell the games",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --recursive --exit",
+    "start": "nodemon index.js"
+  },
+  "author": "Dipti Sharma",
+  "license": "ISC",
+  "dependencies": {
+    "@sendgrid/mail": "^7.7.0",
+    "bcrypt": "^5.1.0",
+    "client": "^0.0.1",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.1.4",
+    "ejs": "^3.1.9",
+    "eslint": "^8.41.0",
+    "express": "^4.18.2",
+    "google-auth-library": "^8.8.0",
+    "jsonwebtoken": "^9.0.0",
+    "knex": "^2.4.2",
+    "nodemailer": "^6.9.3",
+    "pg": "^8.11.0",
+    "pool": "^0.4.1",
+    "prettier": "^2.8.8",
+    "sequelize": "^6.32.1",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "nodemon": "^2.0.22"
+  }
+}
