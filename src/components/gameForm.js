@@ -22,7 +22,7 @@ function GameForm() {
 
   const [image, setImage] = useState({ preview: "", data: "" });
 
-  const url = "http://localhost:8000/api/all_categories";
+  const url = "http://localhost:8000/game/all_categories";
 
   const [showModal, setShowModal] = useState(false);
 
@@ -42,7 +42,8 @@ function GameForm() {
     try {
       const response = await fetch(url); // Replace '/api/data' with the appropriate endpoint of your Node.js backend
       const jsonData = await response.json();
-      setCategories(jsonData.categories);
+      console.log(jsonData.result);
+      setCategories(jsonData.result);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -50,8 +51,6 @@ function GameForm() {
   };
 
   let handleSubmit = async (e) => {
-
-  
     // console.log("clicked");
 
     // const data = {
@@ -114,7 +113,7 @@ function GameForm() {
 
     try {
       let res = await fetch(
-        "http://localhost:8000/game/89ca0831-0477-4996-9deb-d62f6854a1b7",
+        "http://localhost:8000/game/05744714-34aa-411f-ba30-99fa93e8361d",
         {
           method: "POST",
           body: formData,
@@ -131,9 +130,6 @@ function GameForm() {
         // setStartDate("");
         // setValue("buyer");
         handleShowModal();
-
-        
-
 
         console.log("Game created successfully");
       } else {
@@ -156,26 +152,23 @@ function GameForm() {
     return <p>Loading...</p>;
   }
 
-    if (showModal ) 
-    {
-      return   (
-        <div className="modal is-active">
-          <div className="modal-background"></div>
-          <div className="modal-content">
-            <div className="box">
-              <p>Game Created Successfully.</p>
-            </div>
+  if (showModal) {
+    return (
+      <div className="modal is-active">
+        <div className="modal-background"></div>
+        <div className="modal-content">
+          <div className="box">
+            <p>Game Created Successfully.</p>
           </div>
-          <button
-            className="modal-close is-large"
-            aria-label="close"
-            onClick={handleCloseModal}
-          ></button>
         </div>
-      );
-    }
-    
-  
+        <button
+          className="modal-close is-large"
+          aria-label="close"
+          onClick={handleCloseModal}
+        ></button>
+      </div>
+    );
+  }
 
   return (
     <div className="form">
