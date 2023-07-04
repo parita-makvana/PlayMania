@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../config/database');
-const Game = require('./game');
-const User = require('./user');
+const Game = require('../models/game');
+const User = require('../models/user');
 
 const gamePurchased = sequelize.define('gamePurchased ', {
   transaction_id: {

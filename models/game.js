@@ -44,7 +44,7 @@ const Game = sequelize.define('game', {
     type: Sequelize.FLOAT,
   },
   game_image: {
-    type: Sequelize.BLOB('long'),
+    type: Sequelize.STRING,
   },
 });
 
