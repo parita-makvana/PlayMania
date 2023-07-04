@@ -8,6 +8,16 @@ function CategoryForm() {
   const [category_name, setCategory_Name] = useState("");
   const [category_description, setCategory_Description] = useState("");
 
+  const [showModal, setShowModal] = useState(false);
+
+  const handleShowModal = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
   let handleSubmit = async (e) => {
     const data = {
       user_age_limit: age,
@@ -17,7 +27,7 @@ function CategoryForm() {
 
     e.preventDefault();
     try {
-      let res = await fetch("http://localhost:8000/game_category", {
+      let res = await fetch("http://localhost:8000/game/game_category", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -30,6 +40,8 @@ function CategoryForm() {
         setAge("");
         setCategory_Name("");
         setCategory_Description("");
+        handleShowModal();
+
 
         console.log("Category Added successfully");
       } else {
@@ -39,6 +51,27 @@ function CategoryForm() {
       console.log(err);
     }
   };
+
+
+
+  if (showModal ) 
+    {
+      return   (
+        <div className="modal is-active">
+          <div className="modal-background"></div>
+          <div className="modal-content">
+            <div className="box">
+              <p>Game Created Successfully.</p>
+            </div>
+          </div>
+          <button
+            className="modal-close is-large"
+            aria-label="close"
+            onClick={handleCloseModal}
+          ></button>
+        </div>
+      );
+    }
 
   return (
     <div className="form">
