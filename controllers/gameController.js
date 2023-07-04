@@ -130,26 +130,32 @@ async function addCoupon(req, res) {
 
 // -----------------------------------------------------------------------------------------
 async function addGame(req, res) {
+  console.log('game_controller');
   try {
+    const {
+      game_name,
+      game_description,
+      game_size,
+      price,
+      game_type,
+      category_id,
+    } = req.body;
+
     //-----VALIDATIONS-----------
-    if (!game_name || !game_description || !game_size || !game_type || !price) {
+    if (
+      !game_name ||
+      !game_description ||
+      !game_size ||
+      !game_type ||
+      !price ||
+      !category_id
+    ) {
       return res.status(400).send({
         success: false,
         message: 'important field empty',
         errors: [
           {
             message: 'This field cannot be empty',
-          },
-        ],
-      });
-    } else if (user_role != 'seller') {
-      return res.send({
-        success: false,
-        message: 'Error while registering game, not a seller....',
-        errors: [
-          {
-            field: 'user role',
-            message: 'You are not a seller !!',
           },
         ],
       });

@@ -13,8 +13,8 @@ const app = express();
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
+app.use('/uploads', express.static('uploads'));
 
-//
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 

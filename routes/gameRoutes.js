@@ -1,6 +1,19 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
 const router = express.Router();
 const gameController = require('../controllers/gameController');
+
+const storage = multer.diskStorage({
+  destination: './uploads',
+  filename: (req, file, callback) => {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const extension = path.extname(file.originalname);
+    callback(null, `${file.fieldname}-${uniqueSuffix}${extension}`);
+  },
+});
+
+const upload = multer({ storage });
 
 // .............. Routes calling controllers...........
 
@@ -13,8 +26,8 @@ router.get('/all_categories', gameController.getAllCategory);
 // ---------- To delete category -----------
 router.delete('/category/:categoryID', gameController.deleteCategory);
 
-// // ---------- TO ADD GAME --------------
-// router.post('/:userID').post(gameController.addGame);
+//---------- TO ADD GAME --------------
+router.post('/:userID', upload.single('image'), gameController.addGame);
 
 // //---------- To delete game ----------
 // router.delete('/:gameID', gameController.deleteGame);

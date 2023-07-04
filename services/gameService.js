@@ -1,6 +1,7 @@
 const Category = require('../models/category');
 const Game = require('../models/game');
 const Coupon = require('../models/coupon');
+const User = require('../models/user');
 
 const { Op } = require('sequelize');
 
@@ -89,7 +90,43 @@ async function addCoupon(req) {
   }
 }
 
-// --------------- ADD GAME (needs user model) -----------------------------
+// --------------- ADD GAME  -----------------------------
+async function addGame(req) {
+  console.log('servicessss');
+  const {
+    game_name,
+    game_description,
+    game_size,
+    price,
+    game_type,
+    category_id,
+  } = req.body;
+
+  const filePath = req.file.path;
+
+  const game_id = uuidv4();
+  const user_id = req.params.userID;
+
+  try {
+    sequelize.sync();
+    //console.log(result);
+    const result = Game.create({
+      game_id: game_id,
+      game_name: game_name,
+      game_description: game_description,
+      user_id: user_id,
+      category_id: category_id,
+      game_size: game_size,
+      game_type: game_type,
+      price: price,
+      game_image: filePath,
+    });
+    return result;
+  } catch (error) {
+    console.error('Error while adding game', error);
+    throw error; // Rethrow the error to be handled in the controller
+  }
+}
 
 // --------------- DELETE GAME COUPON -----------------------------
 async function deleteCoupon(req) {
@@ -167,4 +204,5 @@ module.exports = {
   addCoupon,
   deleteCoupon,
   getAllGames,
+  addGame,
 };
